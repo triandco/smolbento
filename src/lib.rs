@@ -17,6 +17,7 @@ pub mod smolvm;
 pub mod ssh;
 pub mod ssh_agent;
 pub mod templates;
+pub mod unix_socket;
 pub mod util;
 pub mod workspace;
 

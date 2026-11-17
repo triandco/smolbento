@@ -12,8 +12,9 @@ use crate::config::Settings;
 /// Points the download at another server (tests only).
 pub const URL_ENV: &str = "SMOLBENTO_SMOLVM_URL";
 
-/// macOS's limit on a Unix socket path, in bytes (`sun_path` less its terminator).
-pub const MACOS_SOCKET_LIMIT: usize = 103;
+/// macOS's limit on a Unix socket path, in bytes. smolvm, libkrun and smolbento build addresses
+/// longer than `sun_path` (103 bytes) by hand, so the kernel's own limit applies.
+pub const MACOS_SOCKET_LIMIT: usize = crate::unix_socket::MACOS_MAX_PATH;
 
 /// How to run smolvm.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -201,14 +202,14 @@ mod tests {
             86,
             "é is two bytes"
         );
-        let long = format!("/Users/jhill/{}", "x".repeat(40));
+        let long = format!("/Users/jhill/{}", "x".repeat(200));
         let cmd = SmolvmCmd {
             home: PathBuf::from(&long),
             ..located(&[]).unwrap()
         };
         if cfg!(target_os = "macos") {
             let e = check_home(&cmd).unwrap_err().to_string();
-            assert!(e.contains("limit 103"), "{e}");
+            assert!(e.contains("limit 252"), "{e}");
         } else {
             check_home(&cmd).unwrap();
         }

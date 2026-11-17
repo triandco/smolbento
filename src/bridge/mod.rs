@@ -35,13 +35,21 @@ pub fn agent_socket(name: &str) -> PathBuf {
     agent_socket_in(crate::util::host_uid(), name)
 }
 
-/// The directory of this user's host sockets, `/tmp/sbt-<uid>`.
+/// Moves the host sockets out of `/tmp/sbt-<uid>`: a sandboxed app can only create them in its
+/// container.
+pub const SOCKET_DIR_ENV: &str = "SMOLBENTO_SOCKET_DIR";
+
+/// The directory of this user's host sockets: `$SMOLBENTO_SOCKET_DIR` when set, else
+/// `/tmp/sbt-<uid>`.
 pub fn socket_dir() -> PathBuf {
     dir_of(crate::util::host_uid())
 }
 
 fn dir_of(uid: u32) -> PathBuf {
-    PathBuf::from(format!("/tmp/sbt-{uid}"))
+    match std::env::var_os(SOCKET_DIR_ENV) {
+        Some(dir) if !dir.is_empty() => PathBuf::from(dir),
+        _ => PathBuf::from(format!("/tmp/sbt-{uid}")),
+    }
 }
 
 fn socket_in(uid: u32, name: &str) -> PathBuf {

@@ -530,7 +530,7 @@ mod tests {
         if cfg!(target_os = "macos") {
             assert_eq!(
                 msg,
-                "smolvm.home /Users/jhill/.smolbento (longest socket path 84 of 103 bytes)"
+                "smolvm.home /Users/jhill/.smolbento (longest socket path 84 of 252 bytes)"
             );
         } else {
             assert_eq!(msg, "smolvm.home /Users/jhill/.smolbento");

@@ -122,7 +122,7 @@ pub fn attach(env: &BTreeMap<String, String>, paths: &Paths, sb: &Sandbox) -> Op
 /// host agent with the grant's filter until either side closes. A connection with no host agent
 /// (forwarding off, none running) is closed.
 pub fn serve_connection(guest: &UnixStream, access: &Access, backing: &Backing) {
-    let Some(host) = backing.agent().and_then(|p| UnixStream::connect(p).ok()) else {
+    let Some(host) = backing.agent().and_then(|p| crate::unix_socket::connect(&p).ok()) else {
         return;
     };
     relay(guest, &host, access, backing, &AtomicBool::new(false));
@@ -157,7 +157,7 @@ fn accept_loop(listener: &UnixListener, stop: &Arc<AtomicBool>, access: &Access,
         if open.load(Ordering::Relaxed) >= MAX_CONNECTIONS {
             continue;
         }
-        let Some(host) = b.agent().and_then(|p| UnixStream::connect(p).ok()) else {
+        let Some(host) = b.agent().and_then(|p| crate::unix_socket::connect(&p).ok()) else {
             continue;
         };
         open.fetch_add(1, Ordering::Relaxed);

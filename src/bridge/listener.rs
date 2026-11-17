@@ -71,12 +71,12 @@ fn bind(path: &Path) -> Result<Option<UnixListener>> {
         super::private_dir(dir, crate::util::host_uid())?;
     }
     if fs::symlink_metadata(path).is_ok() {
-        if UnixStream::connect(path).is_ok() {
+        if crate::unix_socket::connect(path).is_ok() {
             return Ok(None);
         }
         fs::remove_file(path).with_context(|| format!("removing stale {}", path.display()))?;
     }
-    match UnixListener::bind(path) {
+    match crate::unix_socket::bind(path) {
         Ok(l) => Ok(Some(l)),
         // Another session bound it since the check.
         Err(e) if e.kind() == std::io::ErrorKind::AddrInUse => Ok(None),
